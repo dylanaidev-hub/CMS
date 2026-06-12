@@ -1,28 +1,21 @@
-'use client';
-
 import PageContainer from '@/components/layout/page-container';
-import { OrganizationList } from '@clerk/nextjs';
-import { workspacesInfoContent } from '@/config/infoconfig';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function WorkspacesPage() {
   return (
     <PageContainer
       pageTitle='Workspaces'
-      pageDescription='Manage your workspaces and switch between them'
-      infoContent={workspacesInfoContent}
+      pageDescription='Workspace management is disabled for this CMS.'
     >
-      <OrganizationList
-        appearance={{
-          elements: {
-            organizationListBox: 'space-y-2',
-            organizationPreview: 'rounded-lg border p-4 hover:bg-accent',
-            organizationPreviewMainIdentifier: 'text-lg font-semibold',
-            organizationPreviewSecondaryIdentifier: 'text-sm text-muted-foreground'
-          }
-        }}
-        afterSelectOrganizationUrl='/dashboard/workspaces/team'
-        afterCreateOrganizationUrl='/dashboard/workspaces/team'
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Single CMS Workspace</CardTitle>
+          <CardDescription>This project now uses a simple single-admin CMS setup.</CardDescription>
+        </CardHeader>
+        <CardContent className='text-muted-foreground text-sm'>
+          Third-party organization management has been removed from the active interface.
+        </CardContent>
+      </Card>
     </PageContainer>
   );
 }
