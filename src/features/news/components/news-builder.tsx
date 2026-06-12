@@ -144,6 +144,7 @@ export function NewsBuilder({ articleId }: { articleId?: string }) {
   const blockRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [slashMenu, setSlashMenu] = useState<SlashMenuState>(null);
   const [bubbleMenu, setBubbleMenu] = useState<BubbleMenuState>(null);
+  const [pendingFocusBlockId, setPendingFocusBlockId] = useState<string | null>(null);
   const [article, setArticle] = useState<NewsArticle>(() => {
     if (!articleId) {
       return createEmptyArticle();
@@ -194,6 +195,20 @@ export function NewsBuilder({ articleId }: { articleId?: string }) {
     return () => document.removeEventListener('selectionchange', handleSelectionChange);
   }, []);
 
+  useEffect(() => {
+    if (!pendingFocusBlockId) {
+      return;
+    }
+
+    const element = blockRefs.current[pendingFocusBlockId];
+    if (!element) {
+      return;
+    }
+
+    placeCaretAtEnd(element);
+    setPendingFocusBlockId(null);
+  }, [article.blocks, pendingFocusBlockId]);
+
   const updateArticle = <K extends keyof NewsArticle>(key: K, value: NewsArticle[K]) => {
     setArticle((current) => ({
       ...current,
@@ -228,12 +243,7 @@ export function NewsBuilder({ articleId }: { articleId?: string }) {
       };
     });
 
-    window.setTimeout(() => {
-      const element = blockRefs.current[newBlock.id];
-      if (element) {
-        placeCaretAtEnd(element);
-      }
-    }, 0);
+    setPendingFocusBlockId(newBlock.id);
   };
 
   const removeBlock = (id: string) => {
@@ -259,19 +269,28 @@ export function NewsBuilder({ articleId }: { articleId?: string }) {
       return;
     }
 
-    updateBlock(slashMenu.blockId, {
+    const blockId = slashMenu.blockId;
+    const element = blockRefs.current[blockId];
+
+    updateBlock(blockId, {
       type,
-      content: type === 'image' ? '' : ''
+      content: ''
     });
+    if (element) {
+      element.innerHTML = '';
+      element.dataset.ready = 'true';
+    }
+
+    setPendingFocusBlockId(blockId);
     setSlashMenu(null);
 
-    window.setTimeout(() => {
-      const element = blockRefs.current[slashMenu.blockId];
-      if (element) {
-        element.innerHTML = '';
-        placeCaretAtEnd(element);
+    window.requestAnimationFrame(() => {
+      const focusedElement = blockRefs.current[blockId];
+      if (focusedElement) {
+        placeCaretAtEnd(focusedElement);
+        setPendingFocusBlockId(null);
       }
-    }, 0);
+    });
   };
 
   const runInlineCommand = (command: 'bold' | 'italic') => {
@@ -299,7 +318,7 @@ export function NewsBuilder({ articleId }: { articleId?: string }) {
       return;
     }
 
-    if (event.key === 'Enter' && !event.shiftKey && block.type !== 'quote') {
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       addBlockAfter(block.id, 'paragraph');
       return;
@@ -461,6 +480,12 @@ export function NewsBuilder({ articleId }: { articleId?: string }) {
                         if (node && node.dataset.ready !== 'true') {
                           node.innerHTML = block.content;
                           node.dataset.ready = 'true';
+                        }
+                        if (node && pendingFocusBlockId === block.id) {
+                          window.requestAnimationFrame(() => {
+                            placeCaretAtEnd(node);
+                            setPendingFocusBlockId(null);
+                          });
                         }
                       }}
                       contentEditable
