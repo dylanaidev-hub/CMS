@@ -378,9 +378,11 @@ Each field has two variants:
 validators={{ onBlur: z.string().email('Invalid email') }}
 
 // Sync function — return error string or undefined
+{% raw %}
 validators={{
   onChange: ({ value }) => value.length < 3 ? 'Too short' : undefined,
 }}
+{% endraw %}
 
 // Async function — supports AbortSignal for cancellation
 validators={{
