@@ -1,3 +1,5 @@
+{% raw %}
+
 # Form System
 
 Type-safe, composable form handling built on [TanStack Form](https://tanstack.com/form) + shadcn/ui. Supports simple CRUD forms, multi-step wizards, sheet/dialog forms, dynamic arrays, nested objects, async validation, linked fields, and cross-field validation.
@@ -378,11 +380,9 @@ Each field has two variants:
 validators={{ onBlur: z.string().email('Invalid email') }}
 
 // Sync function — return error string or undefined
-{% raw %}
 validators={{
   onChange: ({ value }) => value.length < 3 ? 'Too short' : undefined,
 }}
-{% endraw %}
 
 // Async function — supports AbortSignal for cancellation
 validators={{
@@ -1043,3 +1043,5 @@ To include in `useFormFields`, add to its return object.
 | Product CRUD  | `src/features/products/components/product-form.tsx`    | Pattern 1, split schema, onBlur validators |
 | Sheet Product | `src/features/forms/components/sheet-product-form.tsx` | Pattern 2 in Sheet                         |
 | Auth          | `src/features/auth/components/user-auth-form.tsx`      | Pattern 2, minimal                         |
+
+{% endraw %}
